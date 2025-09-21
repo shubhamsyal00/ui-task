@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme {
+  /* Primary */
+  --color-primary-50: oklch(97% 0.02 250);   /* #DBEAFE */
+  --color-primary-100: oklch(90% 0.05 250);  /* #60A5FA */
+  --color-primary-500: oklch(65% 0.12 250);  /* #3B82F6 */
+
+  --color-neutral-0: oklch(100% 0 0);       /* #FFFFFF */
+  --color-neutral-50: oklch(98% 0.01 250);  /* #F9FAFB */
+  --color-neutral-100: oklch(95% 0.01 250); /* #F3F4F6 */
+  --color-neutral-150: oklch(0.2264 0 0 / 20%); /* #1C1C1C33 */
+  --color-neutral-200: oklch(1 0 0 / 20%); /* #FFFFFF33 */
+  --color-neutral-250: oklch(0.2264 0 0 / 40%); /* #1C1C1C66 */
+  --color-neutral-300: oklch(80% 0.02 250); /* #D1D5DB */
+  --color-neutral-350: oklch(1 0 0 / 40%); /* #FFFFFF66 */
+  --color-neutral-400: oklch(0.2264 0 0 / 5.1%); /* #1C1C1C0D */
+  --color-neutral-450: oklch(1 0 0 / 13.58%); /* #ffffff23 */
+
+  --color-neutral-500: oklch(60% 0.04 250); /* #6B7280 */
+  --color-neutral-550: oklch(0.2264 0 0 / 10.2%); /* #1C1C1C1A */
+  --color-neutral-600: oklch(1 0 0 / 10.2%); /* #ffffff1a */
+  --color-neutral-660: oklch(0.9598 0.0233 231.83); /* #E3F5FF */
+  --color-neutral-700: oklch(0.9407 0.0155 257.2); /* #E5ECF6 */
+  --color-neutral-750: oklch(0.9812 0.0034 247.86); /* #F7F9FB */
+  --color-neutral-800: oklch(0.2768 0 0); /* #282828 */
+
+  --color-neutral-900: oklch(20% 0.05 250); /* #111827 */
+  --color-neutral-950: oklch(0.2264 0 0); /* #1C1C1C */
+  --color-neutral-1000: oklch(0.8453 0.0681 283.92);/* #C6C7F8 */
+  --color-neutral-1010: oklch(0.2264 0 0);/* #1c1c1c */
+
+
+
+  /* Status */
+  --color-success-500: oklch(72% 0.19 150);  /* #22C55E */
+  --color-error-500: oklch(63% 0.20 25);     /* #EF4444 */
+  --color-warning-500: oklch(76% 0.16 70);   /* #F59E0B */
+  --color-info-500: oklch(68% 0.15 240);     /* #0EA5E9 */
+
+  /* Chart Specific */
+  --color-chart-direct: oklch(20% 0.05 250); /* #111827 */
+  --color-chart-affiliate: oklch(76% 0.16 70);/* #F59E0B */
+  --color-chart-sponsored: oklch(65% 0.12 250);/* #3B82F6 */
+  --color-chart-email: oklch(75% 0.12 200);  /* #06B6D4 */
+
+  --color-status-progress: oklch(0.7426 0.1282 275.47); /* #95A4FC */
+  --color-status-complete: oklch(0.6624 0.103 166.54); /* #4AA785 */
+  --color-status-pending: oklch(0.6989 0.1011 235.14); /* #59A8D4 */
+  --color-status-approved: oklch(0.8556 0.1427 81.08); /* #FFC555 */
+  --color-status-rejected: #9CA3AF;
+  --color-status-default: #9CA3AF;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Remove outline / underline on recharts container */
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+  outline: none !important;
+}
+
+svg:focus {
+  outline: none;
+}
+
+:root {
+  --color-geo-fill: var(--color-neutral-400);
+  --color-geo-stroke: var(--color-neutral-350);
+  --color-graphline-fill: #0f1720;
+  --color-dougnut-black:#1C1C1C;
+  --color-dougnut-green:#BAEDBD;
+  --color-dougnut-purple:#B1E3FF;
+  --color-dougnut-blue:#95A4FC;
+  --color-check-tick: white;
+}
+
+.dark {
+  --color-geo-fill: #A8C5DA;       /* or any lighter/darker tone */
+  --color-geo-stroke: var(--color-neutral-600);
+  --color-graphline-fill: var(--color-neutral-1000);
+    --color-dougnut-black:#C6C7F8;
+  --color-dougnut-green:#BAEDBD;
+  --color-dougnut-purple:#B1E3FF;
+  --color-dougnut-blue:#95A4FC;
+  --color-check-tick: black;
+    --color-status-complete: #4AA785;
+  --color-status-progress: #95A4FC;
+  --color-status-pending: #59A8D4;
+  --color-status-approved: #FFC555;
+}
