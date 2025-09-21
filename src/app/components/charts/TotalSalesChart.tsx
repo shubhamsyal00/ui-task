@@ -22,7 +22,7 @@ const COLORS = [
   "var(--color-dougnut-blue)",
 ];
 
-// ✅ Custom tooltip component
+// Custom tooltip component
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;

@@ -1,10 +1,10 @@
-// components/orders/OrdersToolbar.tsx
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo, useState, useCallback } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import { IoAddSharp, IoFilterOutline } from "react-icons/io5";
 import { TbArrowsSort } from "react-icons/tb";
+import debounce from "lodash/debounce";
 
 type Props = {
   onSearch: (q: string) => void;
@@ -31,10 +31,39 @@ export default function OrdersToolbar({
   dateFilter,
   setDateFilter,
 }: Props) {
-  const options = Object.values(sortingOptions);
+  const options = useMemo(() => Object.values(sortingOptions), [sortingOptions]);
   const filterRef = useRef<HTMLDivElement | null>(null);
 
-  // close on outside click (kept internal but updates parent state)
+  // controlled input value
+  const [query, setQuery] = useState("");
+
+  // create debounced onSearch (runs 300ms after user stops typing)
+  const debouncedSearch = useMemo(
+    () => debounce((q: string) => onSearch(q), 300),
+    [onSearch]
+  );
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const v = e.target.value;
+      setQuery(v);
+      debouncedSearch(v);
+    },
+    [debouncedSearch]
+  );
+
+  // flush debounce on Enter for instant search
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        debouncedSearch.flush();
+        onSearch(query);
+      }
+    },
+    [debouncedSearch, onSearch, query]
+  );
+
+  // close filter popover when clicking outside
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
@@ -45,23 +74,33 @@ export default function OrdersToolbar({
     return () => document.removeEventListener("mousedown", onDoc);
   }, [setShowFilters]);
 
-  const handleSortClick = () => {
+  // cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
+  const handleSortClick = useCallback(() => {
     const next = sortIndex === null ? 0 : sortIndex + 1;
     if (next >= options.length) {
       setSortIndex(null);
     } else {
       setSortIndex(next);
     }
-  };
+  }, [sortIndex, options.length, setSortIndex]);
 
   return (
     <div className="w-full bg-neutral-750 dark:bg-[#FFFFFF0D] rounded-lg px-4 py-2 h-11 flex items-center gap-3 relative">
       <div className="flex items-center gap-2">
-        <button className="h-7 w-7 flex justify-center items-center rounded hover:bg-gray-50 dark:hover:bg-neutral-450">
+        <button
+          className="h-7 w-7 flex justify-center items-center rounded hover:bg-gray-50 dark:hover:bg-neutral-450"
+          aria-label="Add order"
+        >
           <IoAddSharp />
         </button>
 
-        {/* Filter Popover toggle */}
+        {/* Filter Popover */}
         <div className="relative" ref={filterRef}>
           <button
             onClick={() => setShowFilters((s) => !s)}
@@ -116,15 +155,18 @@ export default function OrdersToolbar({
 
       <div className="flex-1" />
 
-      {/* Search */}
+      {/* Search with lodash debounce */}
       <div className="w-40 h-7">
         <div className="flex items-center gap-2 border border-neutral-150 dark:border-neutral-200 rounded-lg px-2 py-1 bg-neutral-350 dark:bg-neutral-250">
           <HiOutlineSearch className="w-4 h-4 text-neutral-150 dark:text-neutral-200" />
           <input
             type="search"
-            onChange={(e) => onSearch(e.target.value)}
+            value={query}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             placeholder="Search"
             className="w-full bg-transparent outline-none text-sm placeholder:text-neutral-150 dark:placeholder:text-neutral-200 text-neutral-150 dark:text-neutral-200"
+            aria-label="Search orders"
           />
         </div>
       </div>

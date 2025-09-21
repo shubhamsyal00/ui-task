@@ -1,4 +1,3 @@
-// components/RevenueChartECharts.tsx
 "use client";
 
 import React, { useEffect, useRef } from "react";
@@ -18,7 +17,7 @@ import { SVGRenderer } from "echarts/renderers";
 import Card from "../common/Card";
 import { EChartsOption } from "echarts/types/dist/shared";
 
-// register required pieces
+// register only the echarts pieces we need to keep bundle size smaller
 echarts.use([
   TitleComponent,
   TooltipComponent,
@@ -30,8 +29,10 @@ echarts.use([
   SVGRenderer,
 ]);
 
+// simple typed data model for the chart points
 type Point = { name: string; current: number; previous: number };
 
+// sample data used to build the chart series
 const data: Point[] = [
   { name: "Jan", current: 8, previous: 12 },
   { name: "Feb", current: 14, previous: 8 },
@@ -41,32 +42,34 @@ const data: Point[] = [
   { name: "Jun", current: 8, previous: 18 },
 ];
 
+// main chart component — accepts an optional height prop
 export default function RevenueChartECharts({ height = 232 }: { height?: number }) {
+  // ref to the DOM node where echarts will render
   const chartRef = useRef<HTMLDivElement | null>(null);
+  // keep a reference to the echarts instance so we can dispose/resize it
   const instanceRef = useRef<echarts.ECharts | null>(null);
 
   useEffect(() => {
+    // bail out if the ref is not available yet
     if (!chartRef.current) return;
 
-    // init chart
+    // initialize echarts with SVG renderer for crisp lines and easier styling
     const chart = echarts.init(chartRef.current, undefined, { renderer: "svg" });
     instanceRef.current = chart;
 
+    // prepare axis labels and series data
     const months = data.map((d) => d.name);
     const currentVals = data.map((d) => d.current);
     const previousVals = data.map((d) => d.previous);
 
-    // split current into two series but overlap one index at the boundary
-    const splitIndex = 4; // dashed starts at index 4 (May)
+    const splitIndex = 4;
     const currentSolid = currentVals.map((v, i) => (i < splitIndex ? v : null));
-    // include the previous index in dashed too to make a smooth join without gap:
-    // dashed includes index (splitIndex - 1) and onwards
-    const currentDashed = currentVals.map((v, i) =>
-      i >= splitIndex - 1 ? v : null
-    );
+    const currentDashed = currentVals.map((v, i) => (i >= splitIndex - 1 ? v : null));
 
+    // compute a nice Y max so the chart has breathing room
     const yMax = Math.ceil(Math.max(...[...currentVals, ...previousVals]) * 1.12);
 
+    // chart option object — typed as EChartsOption
     const option: EChartsOption = {
       backgroundColor: "transparent",
       grid: { left: 40, right: 24, top: 20, bottom: 20 },
@@ -78,17 +81,16 @@ export default function RevenueChartECharts({ height = 232 }: { height?: number 
         textStyle: { color: "#0f1720" },
         axisPointer: { type: "line", lineStyle: { color: "transparent" } },
 
-        // <-- we accept `params: any` and cast to `any` so TS stops complaining
-        formatter: ((
-          params: any
-        ) => {
+        formatter: ((params: any) => {
           if (!params || params.length === 0) return "";
 
+          // first param usually holds the category name
           const month = params[0]?.name ?? "";
 
           let prev: number | null = null;
           let current: number | null = null;
 
+          // iterate through the items and pick out the values we care about
           params.forEach((p: any) => {
             if (!p) return;
             const name: string = p.seriesName ?? "";
@@ -122,70 +124,73 @@ export default function RevenueChartECharts({ height = 232 }: { height?: number 
         axisLabel: { color: "var(--color-neutral-500)", formatter: "{value}M", fontSize: 13 },
       },
 
-
+      // three series:
+      // 1) previous (solid with area)
+      // 2) current-solid (solid line up to split)
+      // 3) current-dashed (dashed line after split, overlaps one index)
       series: [
-  {
-    name: "previous",
-    type: "line",
-    smooth: true,
-    data: previousVals,
-    showSymbol: false,
-    lineStyle: { color: "#A8C5DA", width: 2 },
-    itemStyle: { color: "#A8C5DA", borderColor: "#fff", borderWidth: 2 },
-    areaStyle: {
-      color: {
-        type: "linear",
-        x: 0, y: 0, x2: 0, y2: 1,
-        colorStops: [
-          { offset: 0, color: "rgba(168,197,218,0.18)" },
-          { offset: 1, color: "rgba(168,197,218,0.02)" },
-        ],
-      },
-    },
-    z: 1,
-    emphasis: { disabled: true },   // 🔑 disables hover fade
-    select: { disabled: true },     // 🔑 disables selection
-  },
+        {
+          name: "previous",
+          type: "line",
+          smooth: true,
+          data: previousVals,
+          showSymbol: false,
+          lineStyle: { color: "#A8C5DA", width: 2 },
+          itemStyle: { color: "#A8C5DA", borderColor: "#fff", borderWidth: 2 },
+          areaStyle: {
+            color: {
+              type: "linear",
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: "rgba(168,197,218,0.18)" },
+                { offset: 1, color: "rgba(168,197,218,0.02)" },
+              ],
+            },
+          },
+          z: 1,
+          emphasis: { disabled: true },
+          select: { disabled: true },
+        },
 
-  {
-    name: "current-solid",
-    type: "line",
-    smooth: true,
-    data: currentSolid,
-    showSymbol: false,
-    connectNulls: true,
-    lineStyle: { color: "var(--color-graphline-fill)", width: 2.0 },
-    itemStyle: { color: "var(--color-graphline-fill)", borderColor: "#fff", borderWidth: 2 },
-    z: 2,
-    emphasis: { disabled: true },   // 🔑 no hover fade
-    select: { disabled: true },     // 🔑 no selection
-  },
+        {
+          name: "current-solid",
+          type: "line",
+          smooth: true,
+          data: currentSolid,
+          showSymbol: false,
+          connectNulls: true,
+          lineStyle: { color: "var(--color-graphline-fill)", width: 2.0 },
+          itemStyle: { color: "var(--color-graphline-fill)", borderColor: "#fff", borderWidth: 2 },
+          z: 2,
+          emphasis: { disabled: true },
+          select: { disabled: true },
+        },
 
-  {
-    name: "current-dashed",
-    type: "line",
-    smooth: true,
-    data: currentDashed,
-    showSymbol: false,
-    symbol: "circle",
-    symbolSize: 8,
-    connectNulls: true,
-    lineStyle: { color: "var(--color-graphline-fill)", width: 2.6, type: "dashed" },
-    itemStyle: { color: "var(--color-graphline-fill)", borderColor: "#fff", borderWidth: 2 },
-    z: 3,
-    emphasis: { disabled: true },   // 🔑 no hover fade
-    select: { disabled: true },     // 🔑 no selection
-  },
-],
-
+        {
+          name: "current-dashed",
+          type: "line",
+          smooth: true,
+          data: currentDashed,
+          showSymbol: false,
+          symbol: "circle",
+          symbolSize: 8,
+          connectNulls: true,
+          lineStyle: { color: "var(--color-graphline-fill)", width: 2.6, type: "dashed" },
+          itemStyle: { color: "var(--color-graphline-fill)", borderColor: "#fff", borderWidth: 2 },
+          z: 3,
+          emphasis: { disabled: true },
+          select: { disabled: true },     // disable selection state
+        },
+      ],
     };
 
+    // apply the option and wire up responsive behavior
     chart.setOption(option);
 
-    // make it responsive
     const resize = () => chart.resize();
     window.addEventListener("resize", resize);
 
+    // cleanup on unmount: remove listener and dispose the chart instance
     return () => {
       window.removeEventListener("resize", resize);
       chart.dispose();
@@ -195,16 +200,21 @@ export default function RevenueChartECharts({ height = 232 }: { height?: number 
 
   return (
     <Card className="rounded-2xl p-6 bg-neutral-750 dark:bg-neutral-800 h-[318px]">
+      {/* Title and legend area */}
       <div className="mb-2">
         <div className="text-sm font-semibold text-text-primary dark:text-text-primary-dark flex items-center">
           Revenue <span className="text-neutral-150 dark:text-neutral-200 ml-3 mr-6">|</span>
           <ChartLegend />
         </div>
       </div>
+
+      {/* chart container; echarts will render into this div */}
       <div style={{ height }} ref={chartRef} />
     </Card>
   );
 }
+
+// small presentational legend used in the card header
 function ChartLegend() {
   return (
     <div className="flex items-center gap-4">

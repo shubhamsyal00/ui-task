@@ -29,7 +29,6 @@ export default function Pagination({
 
   React.useEffect(() => {
     if (!isControlled) setInternalPage((p) => clamp(p));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalPages]);
 
   const setPage = (p: number) => {
@@ -61,11 +60,8 @@ export default function Pagination({
     else if (e.key === "ArrowRight") next();
   };
 
-  // base button (no global focus ring)
   const baseBtn = "inline-flex items-center justify-center px-2 py-1 rounded-md text-sm font-medium transition";
 
-  // For non-current pages, keep a visible focus-visible ring (keyboard users)
-  // For current page, explicitly remove outline/ring (what you requested)
   const pageBtnClass = (p: number) =>
     p === currentPage
       ? `${baseBtn} bg-neutral-100 dark:bg-neutral-200 focus:outline-none ring-0` 
