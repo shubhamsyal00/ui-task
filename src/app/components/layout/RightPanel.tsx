@@ -12,7 +12,7 @@ export const RightPanel: FC = () => {
       <SectionHeading title="Notifications" />
       <div className="flex flex-col gap-2 mb-4">
         {notifications.map((n: NotificationItem) => (
-          <NotificationRow key={n.id} item={n} />
+          <NotificationRow key={`${n.id}-NotificationRow`} item={n} />
         ))}
       </div>
 
