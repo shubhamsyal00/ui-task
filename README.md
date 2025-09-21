@@ -16,3 +16,6 @@ npm install --force
 npm run dev   # or yarn dev
 
 Now open http://localhost:3000 in your browser and you’re good to go!
+Routes
+Dashboard → Available at the root: /
+Orders → Accessible by clicking Orders in the dashboard or directly navigating to /orders
